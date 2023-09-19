@@ -51,25 +51,41 @@ jobs:
           df -h
       - name: Checkout Ghaf
         uses: actions/checkout@v3
+      - name: Set NIX_SYSTEM variable (emulated builds)
+        run: |
+          if [ "${{ matrix.arch }}" = "aarch64-linux" ]; then
+            echo "NIX_SYSTEM=aarch64-linux" >> "$GITHUB_ENV"
+          else
+            echo "NIX_SYSTEM=x86_64-linux" >> "$GITHUB_ENV"
+          fi
       - name: Install nix
-        uses: cachix/install-nix-action@v22
+        uses: DeterminateSystems/nix-installer-action@main
         with:
-          extra-nix-config: |
+          extra-conf: |
             trusted-public-keys = ghaf-dev.cachix.org-1:IxMRy9D4TCXA/57XvtU0xrcEC0ErsnLvxJfPQe8O9pc= cache.vedenemo.dev:RGHheQnb6rXGK5v9gexJZ8iWTPX6OcSeS56YeXYzOcg= cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
             substituters = https://ghaf-dev.cachix.org?priority=20 https://cache.vedenemo.dev https://cache.nixos.org
             system-features = nixos-test benchmark big-parallel kvm
+            system = ${{ env.NIX_SYSTEM }}
       - name: Print nix.conf
         run: |
           echo "/etc/nix/nix.conf:"
           cat /etc/nix/nix.conf
-      - name: Setup cachix
-        uses: cachix/cachix-action@v12
-        with:
-          name: ghaf-dev
-          authToken: ${{ secrets.CACHIX_AUTH_GHAF_DEV }}
-          pushFilter: '(/\.links/|nixos\.img$|store-disk\.squashfs$)'
-          cachixArgs: '-j8 -c16'
+      - name: Install requirements
+        run: sudo apt-get install -y qemu-user-static
+      - name: Install cachix
+        run: |
+          nix-env -iA cachix -f https://cachix.org/api/v1/install
+          echo "Using cachix version:"
+          cachix --version
       - name: Build ${{ matrix.arch }}.${{ matrix.target }}
         run: |
-          cachix watch-exec ghaf-dev -- \
+          if [ "${{ secrets.CACHIX_AUTH_GHAF_DEV }}" = "" ]; then
+            echo "Running nix build, no cachix push"
             time nix build .#packages.${{ matrix.arch }}.${{ matrix.target }}
+            echo "Skipping cachix push, no token"
+          else
+            cachix authtoken ${{ secrets.CACHIX_AUTH_GHAF_DEV }}
+            echo "Running nix build, with cachix watch-exec"
+            cachix watch-exec ghaf-dev -- \
+              time nix build .#packages.${{ matrix.arch }}.${{ matrix.target }}
+          fi
