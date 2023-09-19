@@ -51,63 +51,25 @@ jobs:
           df -h
       - name: Checkout Ghaf
         uses: actions/checkout@v3
-      - name: Set NIX_SYSTEM variable (emulated builds)
-        run: |
-          if [ "${{ matrix.arch }}" = "aarch64-linux" ]; then
-            echo "NIX_SYSTEM=aarch64-linux" >> "$GITHUB_ENV"
-          else
-            echo "NIX_SYSTEM=x86_64-linux" >> "$GITHUB_ENV"
-          fi
       - name: Install nix
-        uses: DeterminateSystems/nix-installer-action@main
+        uses: cachix/install-nix-action@v22
         with:
-          extra-conf: |
+          extra-nix-config: |
             trusted-public-keys = ghaf-dev.cachix.org-1:IxMRy9D4TCXA/57XvtU0xrcEC0ErsnLvxJfPQe8O9pc= cache.vedenemo.dev:RGHheQnb6rXGK5v9gexJZ8iWTPX6OcSeS56YeXYzOcg= cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
             substituters = https://ghaf-dev.cachix.org?priority=20 https://cache.vedenemo.dev https://cache.nixos.org
             system-features = nixos-test benchmark big-parallel kvm
-            system = ${{ env.NIX_SYSTEM }}
       - name: Print nix.conf
         run: |
           echo "/etc/nix/nix.conf:"
           cat /etc/nix/nix.conf
-      - name: Install requirements
-        run: sudo apt-get install -y qemu-user-static
-      - name: Install cachix
-        run: |
-          nix-env -iA cachix -f https://cachix.org/api/v1/install
-          echo "Using cachix version:"
-          cachix --version
+      - name: Setup cachix
+        uses: cachix/cachix-action@v12
+        with:
+          name: ghaf-dev
+          authToken: ${{ secrets.CACHIX_AUTH_GHAF_DEV }}
+          pushFilter: '(/\.links/|nixos\.img$|store-disk\.squashfs$)'
+          cachixArgs: '-j8 -c16'
       - name: Build ${{ matrix.arch }}.${{ matrix.target }}
         run: |
-          echo "Snapshot nix store files before build"
-          nix-collect-garbage
-          store_pre_build=$(mktemp)
-          find /nix/store -type f > "$store_pre_build"
-
-          echo "nix build"
-          time nix build .#packages.${{ matrix.arch }}.${{ matrix.target }}
-
-          echo "Snapshot nix store files after build"
-          store_post_build=$(mktemp)
-          find /nix/store -type f > "$store_post_build"
-
-          echo "Finding new nix store files"
-          store_new_unfiltered=$(mktemp)
-          for f in $(diff "$store_pre_build" "$store_post_build" | cut -d" " -f2)
-          do
-            if [ -e $f ]; then
-              echo "$f" >> "$store_new_unfiltered"
-            fi
-          done
-          rm -f "$store_pre_build" "$store_post_build"
-
-          if [ "${{ secrets.CACHIX_AUTH_GHAF_DEV }}" = "" ]; then
-            echo "Skipping cachix push"
-          else
-            echo "Running cachix push"
-            filter='(\.drv$|\.drv.chroot$|\.check$|\.lock$|-source$|/\.links/|nixos\.img$|store-disk\.squashfs$)'
-            store_new_filtered=$(mktemp)
-            grep -vP "$filter" "$store_new_unfiltered" > "$store_new_filtered"
-            cachix authtoken ${{ secrets.CACHIX_AUTH_GHAF_DEV }}
-            time cachix push -j8 -c16 ghaf-dev < "$store_new_filtered"
-          fi
+          cachix watch-exec ghaf-dev -- \
+            time nix build .#packages.${{ matrix.arch }}.${{ matrix.target }}
