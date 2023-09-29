@@ -1,0 +1,202 @@
+name: nix 
+
+on:
+  pull_request_target:
+    branches:
+      - main
+
+jobs:
+  authorize-without-approval:
+    runs-on: ubuntu-latest
+    outputs:
+      authorized_user: ${{ steps.check-authorized-user.outputs.authorized_user}}
+    environment: 'internal-build-workflow'
+    steps:
+      - name: Authorize without approval
+        id: check-authorized-user
+        shell: bash
+        run: |
+          authorized_user='False'
+          for user in ${{ vars.AUTHORIZED_USERS }};
+          do
+            if [ "$user" = "${{ github.actor }}" ]; then
+              authorized_user='True'
+            fi
+          done
+          echo "github.event_name: ${{ github.event_name }}"
+          echo "github.repository: ${{ github.repository }}"
+          echo "github.event.pull_request.head.repo.full_name: ${{ github.event.pull_request.head.repo.full_name }}"
+          echo "github.actor: ${{ github.actor }}"
+          echo "authorized_user=$authorized_user"
+          echo "authorized_user=$authorized_user" >> "$GITHUB_OUTPUT"
+
+  authorize-internal:
+    needs: authorize-without-approval
+    runs-on: ubuntu-latest
+    if: ${{ needs.authorize-without-approval.outputs.authorized_user == 'True' }}
+    steps:
+      - name: Authorized internal
+        run: true
+
+  authorize-external:
+    needs: authorize-without-approval
+    runs-on: ubuntu-latest
+    if: ${{ needs.authorize-without-approval.outputs.authorized_user == 'False' }}
+    environment: 
+      ${{ ( github.event_name == 'pull_request_target' &&
+            github.event.pull_request.head.repo.full_name != github.repository && 
+            'external-build-workflow' ) || ( 'internal-build-workflow' ) }}
+    steps:
+      - name: Authorized external
+        run: true
+
+  authorize-build:
+    needs: [authorize-internal, authorize-external]
+    runs-on: ubuntu-latest
+    if: |
+      always() &&
+      (needs.authorize-internal.result == 'success' || needs.authorize-internal.result == 'skipped') &&
+      (needs.authorize-external.result == 'success' || needs.authorize-external.result == 'skipped') &&
+       !(needs.authorize-internal.result == 'skipped' && needs.authorize-external.result == 'skipped')
+    steps:
+      - name: Authorized build
+        run: true
+
+  check-workflow-changes:
+    needs: authorize-build
+    runs-on: ubuntu-latest
+    outputs:
+      workflow_changed: ${{ steps.check-workflow.outputs.workflow_changed }}
+    if: always() && needs.authorize-build.result == 'success'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
+      - name: Check if this workflow file is modified
+        id: check-workflow
+        shell: bash
+        run: |
+          echo "git log -1 --pretty=oneline:"
+          git log -1 --pretty=oneline
+
+          echo "git diff --name-only HEAD^ HEAD:"
+          git diff --name-only HEAD^ HEAD
+
+          echo "Checking if workflow file is modified"
+          workflow_changed='False'
+          workflow_filename=''
+          while read -r line;
+          do
+            if [[ ${{ github.workflow_ref }} == *$line* ]]; then
+              workflow_changed='True'
+              workflow_filename="$line"
+              break
+            fi
+          done < <(git diff --name-only HEAD^ HEAD)
+          echo "workflow_changed=$workflow_changed"
+          echo "workflow_changed=$workflow_changed" >> "$GITHUB_OUTPUT"
+          if [ "$workflow_changed" = "False" ]; then
+            exit 0
+          fi
+
+          if [ ${{ github.event_name }} = 'pull_request_target' ] && \
+             [ ${{ github.event.pull_request.head.repo.full_name }} != ${{ github.repository }} ];
+          then
+            echo ""
+            echo "::error::"\
+                  "Editing workflow file '$workflow_filename' with PR from a"\
+                  "forked repository is not allowed. The change you are trying to do"\
+                  "requires internal PR from someone with write access to this repo."
+            exit 1
+          fi
+          echo ""
+          echo "::error::"\
+               "You are editing workflow file '$workflow_filename' from an"\
+               "internal PR. Raising this error (but not failing the job) to make"\
+               "sure you understand that the workflow change you have done will"\
+               "only take impact after merge."\
+               "Therefore, you need to manually test the change (perhaps in a"\
+               "forked repo) before merge to make sure the change does not break"\
+               "anything."\
+               "For now, there's no point of running the remaining steps since the"\
+               "results would not reflect the modification you have done to the"\
+               "workflow, and might cause outright confusion or misinterpretation."
+
+  build_matrix:
+    name: "build"
+    needs: [check-workflow-changes]
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      matrix:
+        include:
+          - arch: x86_64-linux
+            target: lenovo-x1-carbon-gen11-debug
+          - arch: x86_64-linux
+            target: nvidia-jetson-orin-agx-debug-nodemoapps-from-x86_64
+    # Skip running the build_matrix if the change does modifies this workflow
+    # file as explained in the error message in the check-workflow step.
+    if: always() && needs.check-workflow-changes.outputs.workflow_changed == 'False'
+    steps:
+      - name: Maximize space available on rootfs
+        # Why not use https://github.com/easimon/maximize-build-space directly?
+        # The reason is: we want to maximize the space on rootfs, since that's
+        # where the nix store (`/nix/store`) is located. Github action
+        # https://github.com/easimon/maximize-build-space maximizes
+        # the builder space on ${GITHUB_WORKSPACE}, which is not what we need.
+        # Alternatively, we could move the nix store to ${GITHUB_WORKSPACE}
+        # and use https://github.com/easimon/maximize-build-space as such, but
+        # we suspect other tooling (e.g. cachix) would not work well with such
+        # configuration.
+        run: |
+          echo "Available storage before cleanup:"
+          df -h
+          echo
+          echo "Removing unwanted software... "
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /opt/hostedtoolcache/CodeQL
+          sudo docker image prune --all --force
+          echo "... done"
+          echo
+          echo "Available storage after cleanup:"
+          df -h
+      - name: Checkout Ghaf
+        uses: actions/checkout@v3
+      - name: Set NIX_SYSTEM variable (emulated builds)
+        run: |
+          if [ "${{ matrix.arch }}" = "aarch64-linux" ]; then
+            echo "NIX_SYSTEM=aarch64-linux" >> "$GITHUB_ENV"
+          else
+            echo "NIX_SYSTEM=x86_64-linux" >> "$GITHUB_ENV"
+          fi
+      - name: Install nix
+        uses: DeterminateSystems/nix-installer-action@main
+        with:
+          extra-conf: |
+            trusted-public-keys = ghaf-dev.cachix.org-1:S3M8x3no8LFQPBfHw1jl6nmP8A7cVWKntoMKN3IsEQY= cache.vedenemo.dev:RGHheQnb6rXGK5v9gexJZ8iWTPX6OcSeS56YeXYzOcg= cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
+            substituters = https://ghaf-dev.cachix.org?priority=20 https://cache.vedenemo.dev https://cache.nixos.org
+            system-features = nixos-test benchmark big-parallel kvm
+            system = ${{ env.NIX_SYSTEM }}
+      - name: Install requirements
+        run: sudo apt-get install -y qemu-user-static
+      - name: Install cachix
+        run: |
+          nix-env -iA cachix -f https://cachix.org/api/v1/install
+          echo "Using cachix version:"
+          cachix --version
+      - name: Build ${{ matrix.arch }}.${{ matrix.target }}
+        run: |
+          if [ "${{ secrets.CACHIX_AUTH_TOKEN }}" = "" ]; then
+            echo "Running nix build, no cachix push"
+            nix build .#packages.${{ matrix.arch }}.${{ matrix.target }}
+            echo "Skipping cachix push, no token"
+          else
+            cachix authtoken ${{ secrets.CACHIX_AUTH_TOKEN }}
+            echo "Running nix build, with cachix watch-exec"
+            cachix watch-exec ghaf-dev -- \
+              nix build .#packages.${{ matrix.arch }}.${{ matrix.target }}
+          fi
