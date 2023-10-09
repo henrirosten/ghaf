@@ -1,0 +1,73 @@
+name: build
+
+on:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  build_matrix:
+    name: "build"
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      matrix:
+        include:
+          - arch: x86_64-linux
+            target: generic-x86_64-release
+    steps:
+      - name: Maximize space available on rootfs
+        # Why not use https://github.com/easimon/maximize-build-space directly?
+        # The reason is: we want to maximize the space on rootfs, since that's
+        # where the nix store (`/nix/store`) is located. Github action
+        # https://github.com/easimon/maximize-build-space maximizes
+        # the builder space on ${GITHUB_WORKSPACE}, which is not what we need.
+        # Alternatively, we could move the nix store to ${GITHUB_WORKSPACE}
+        # and use https://github.com/easimon/maximize-build-space as such, but
+        # we suspect other tooling (e.g. cachix) would not work well with such
+        # configuration.
+        run: |
+          echo "Available storage before cleanup:"
+          df -h
+          echo
+          echo "Removing unwanted software... "
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /opt/hostedtoolcache/CodeQL
+          sudo docker image prune --all --force
+          echo "... done"
+          echo
+          echo "Available storage after cleanup:"
+          df -h
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
+      - name: Install nix (cachix/install-nix-action:nix-2.18.1 with options)
+        uses: cachix/install-nix-action@v22
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+          install_url: https://releases.nixos.org/nix/nix-2.18.1/install
+          extra_nix_config: |
+            nix-path = nixpkgs=channel:nixos-unstable nixpkgs=flake:nixpkgs
+            bash-prompt-prefix = (nix:$name)\040
+            experimental-features = flakes nix-command repl-flake
+            extra-platforms = i686-linux x86_64-v1-linux x86_64-v2-linux x86_64-v3-linux x86_64-v4-linux
+            auto-optimise-store = true
+            trusted-public-keys = ghaf-dev.cachix.org-1:S3M8x3no8LFQPBfHw1jl6nmP8A7cVWKntoMKN3IsEQY= cache.vedenemo.dev:RGHheQnb6rXGK5v9gexJZ8iWTPX6OcSeS56YeXYzOcg= cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
+            substituters = https://ghaf-dev.cachix.org?priority=20 https://cache.vedenemo.dev https://cache.nixos.org
+            system-features = nixos-test benchmark big-parallel kvm
+      - name: Print nix version
+        run: |
+          echo "nix-info"
+          nix-shell -p nix-info --run 'nix-info -m'
+          echo "nixpkgs version: $(nix-instantiate --eval -E '(import <nixpkgs> {}).lib.version')"
+          nixpkgs_path=$(nix-shell -p nix-info --run "nix-info -m" | grep "nixpkgs: " | cut -d'`' -f2)
+          echo "nixpkgs_path: $nixpkgs_path"
+          echo "nixpkgs git-revision: $(cat $nixpkgs_path/.git-revision)"
+      - run: nix show-config
+      - name: Build ${{ matrix.arch }}.${{ matrix.target }}
+        run: |
+          nix build .#packages.${{ matrix.arch }}.${{ matrix.target }}
