@@ -27,7 +27,8 @@ We like commits as they keep the project going. If you have ideas you want to ex
 * Do not assume that readers know everything you currently know.
 * Avoid jargon and acronyms, if you can.
 * Do not reference future development or features that do not yet exist.
-  
+
+
 
 ## Contributing Code
 
