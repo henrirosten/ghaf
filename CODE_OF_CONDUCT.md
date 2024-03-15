@@ -5,6 +5,7 @@
 
 # Code of Conduct
 
+
 This is a Code of Conduct for the Ghaf community.
 
 <!-- markdown-toc --bullets="-" -i CODE_OF_CONDUCT.md -->
