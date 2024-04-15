@@ -78,11 +78,13 @@
               host.kernel.hardening.hypervisor.enable = false;
 
               hardware.x86_64.common.enable = true;
+              hardware.ax88179_178a.enable = true;
 
               security.tpm2.enable = true;
 
               virtualization.microvm-host.enable = true;
-              virtualization.microvm-host.hostNetworkSupport = true;
+              virtualization.microvm-host.networkSupport = true;
+
               host.networking.enable = true;
               virtualization.microvm.netvm = {
                 enable = true;
@@ -130,7 +132,7 @@
                 ++ config.ghaf.hardware.definition.gpu.pciDevices
               ));
             in [
-              "intel_iommu=on,igx_off,sm_on"
+              "intel_iommu=on,sm_on"
               "iommu=pt"
               # Prevent i915 module from being accidentally used by host
               "module_blacklist=i915"

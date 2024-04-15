@@ -25,6 +25,14 @@
         in {
           imports = [
             "${toString modulesPath}/installer/cd-dvd/installation-cd-minimal.nix"
+            ../../modules/common/hardware/ax88179_178a.nix
+          ];
+
+          ghaf.hardware.ax88179_178a.enable = true;
+
+          # SSH key to installer for test automation.
+          users.users.nixos.openssh.authorizedKeys.keys = lib.mkIf (variant == "debug") [
+            "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAolaKCuIUBQSBFGFZI1taNX+JTAr8edqUts7A6k2Kv7"
           ];
 
           systemd.services.wpa_supplicant.wantedBy = lib.mkForce ["multi-user.target"];
