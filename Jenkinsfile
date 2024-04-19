@@ -13,12 +13,14 @@ pipeline {
   }
   stages {
     stage('Set PR status pending') {
-      script {
-        setGitHubPullRequestStatus(
-          state: 'PENDING',
-          context: 'jenkins/pipeline',
-          message: 'Build started',
-        )
+      steps {
+        script {
+          setGitHubPullRequestStatus(
+            state: 'PENDING',
+            context: 'jenkins/pipeline',
+            message: 'Build started',
+          )
+        }
       }
     }
     stage('Build on x86_64') {
