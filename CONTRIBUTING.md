@@ -5,6 +5,7 @@
 
 # Welcome Contributors!
 
+MOD
 We like commits as they keep the project going. If you have ideas you want to experiment with, make a fork and see how it works. Use pull requests if you are unsure and suggest changes to our maintainers.
 
 - [Welcome Contributors!](#welcome-contributors)
