@@ -42,7 +42,6 @@ Release candidates will not receive security updates.
 
 
 
-
 ## Security Team
 
 The Security Team is responsible for the overall security of the project and for reviewing reported vulnerabilities. Each member is familiar with designing secure software, security issues related to CI/CD, GitHub Actions, and build provenance.
