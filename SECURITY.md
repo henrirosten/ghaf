@@ -31,8 +31,6 @@ release, disclosure processes, and the general security posture.
 ## Supported Versions
 
 
-
-
 The following versions are currently supported and receive security updates.
 Release candidates will not receive security updates.
 
