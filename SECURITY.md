@@ -53,6 +53,7 @@ Security Team:
 Security Team membership is currently considered on a case-by-case basis.
 
 
+
 ## Reporting Vulnerability
 
 We are grateful to security researchers and users who report vulnerabilities. The project [Security Team](#security-team) thoroughly investigates all reports.
