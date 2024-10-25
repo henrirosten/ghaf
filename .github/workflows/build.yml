@@ -126,6 +126,8 @@ jobs:
         run: sudo apt-get update; sudo apt-get install -y inxi git
       - name: Print runner system info
         run: sudo inxi -c0 --width -1 --basic --memory-short
+      - name: Print whoami
+        run: whoami
       - name: Checkout
         uses: actions/checkout@v4
         with:
