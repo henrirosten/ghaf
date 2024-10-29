@@ -100,30 +100,6 @@ jobs:
       group: ${{ github.workflow }}.${{ github.event.pull_request.number || github.ref }}.${{ matrix.arch }}.${{ matrix.target }}
       cancel-in-progress: true
     steps:
-      - name: Maximize space available on rootfs
-        # Why not use https://github.com/easimon/maximize-build-space directly?
-        # The reason is: we want to maximize the space on rootfs, since that's
-        # where the nix store (`/nix/store`) is located. Github action
-        # https://github.com/easimon/maximize-build-space maximizes
-        # the builder space on ${GITHUB_WORKSPACE}, which is not what we need.
-        # Alternatively, we could move the nix store to ${GITHUB_WORKSPACE}
-        # and use https://github.com/easimon/maximize-build-space as such, but
-        # we suspect other tooling (e.g. cachix) would not work well with such
-        # configuration.
-        run: |
-          echo "Available storage before cleanup:"
-          df -h
-          echo
-          echo "Removing unwanted software... "
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /usr/local/lib/android
-          sudo rm -rf /opt/ghc
-          sudo rm -rf /opt/hostedtoolcache/CodeQL
-          sudo docker image prune --all --force
-          echo "... done"
-          echo
-          echo "Available storage after cleanup:"
-          df -h
       - name: Apt install
         run: sudo apt-get update; sudo apt-get install -y inxi git
       - name: Print runner system info
@@ -167,6 +143,7 @@ jobs:
       - name: Build ${{ matrix.arch }}.${{ matrix.target }}
         run: |
           BUILDER=''
+          sudo sh -c "umask 377; echo '${{ secrets.BUILDER_SSH_KEY }}' >builder_key"
           if [ "${{ matrix.arch }}" == "x86_64-linux" ]; then
             BUILDER='github@build4.vedenemo.dev'
           elif [ "${{ matrix.arch }}" == "aarch64-linux" ]; then
@@ -178,5 +155,5 @@ jobs:
           nix run github:Mic92/nix-fast-build#nix-fast-build -- \
             --flake .#packages.${{ matrix.arch }}.${{ matrix.target }} \
             --remote "$BUILDER" \
-            --remote-ssh-option IdentityFile /etc/nix/id_builder_key \
+            --remote-ssh-option IdentityFile builder_key \
             --no-download --skip-cached --debug --no-nom
