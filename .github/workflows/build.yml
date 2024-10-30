@@ -130,15 +130,17 @@ jobs:
       - name: Build ${{ matrix.arch }}.${{ matrix.target }}
         run: |
           if [ "${{ matrix.arch }}" == "x86_64-linux" ]; then
-            BUILDER='github@build4.vedenemo.dev'
+            BUILDER='${{ vars.BUILDER_X86 }}'
           elif [ "${{ matrix.arch }}" == "aarch64-linux" ]; then
-            BUILDER='github@hetzarm.vedenemo.dev'
+            BUILDER='${{ vars.BUILDER_AARCH }}'
           else
             echo "::error::Unknown architecture: '${{ matrix.arch }}'"
             exit 1
           fi
-          nix run github:Mic92/nix-fast-build#nix-fast-build -- \
+          NIX_FAST_BUILD_GITREF="1775c732"
+          nix run github:Mic92/nix-fast-build/"$NIX_FAST_BUILD_GITREF"#nix-fast-build -- \
             --flake .#packages.${{ matrix.arch }}.${{ matrix.target }} \
             --remote "$BUILDER" \
             --remote-ssh-option IdentityFile builder_key \
+            --option accept-flake-config true \
             --no-download --skip-cached --no-nom
