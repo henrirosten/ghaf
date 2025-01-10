@@ -4,6 +4,7 @@
 
 name: build
 on:
+  push:
   pull_request_target:
     branches:
       - main
@@ -93,7 +94,7 @@ jobs:
     if: |
       always() &&
       needs.authorize.result == 'success' &&
-      needs.build-yml-check.outputs.result == 'not-changed'
+      needs.build-yml-check.outputs.result == 'build-yml-check-passed'
     concurrency:
       # Cancel any in-progress workflow runs from the same PR or branch,
       # allowing matrix jobs to run concurrently:
