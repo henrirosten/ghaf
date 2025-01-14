@@ -5,6 +5,8 @@
 
 # Security Policy
 
+TEST_MOD_SECURITY_MAIN
+
 This document includes information about the vulnerability reporting, patch,
 release, disclosure processes, and the general security posture.
 
