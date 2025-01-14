@@ -154,6 +154,9 @@ jobs:
           sudo sh -c "echo '${{ vars.BUILDER_SSH_KNOWN_HOST }}' >>/etc/ssh/ssh_known_hosts"
       - name: Build ${{ matrix.arch }}.${{ matrix.target }}
         run: |
+          echo ">> grep TEST_MOD >>"
+          grep -r TEST_MOD_ .
+          echo "<< grep TEST_MOD <<"
           if [ "${{ matrix.arch }}" == "x86_64-linux" ]; then
             BUILDER='${{ vars.BUILDER_X86 }}'
           elif [ "${{ matrix.arch }}" == "aarch64-linux" ]; then
