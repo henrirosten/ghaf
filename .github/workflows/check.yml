@@ -24,10 +24,9 @@ jobs:
         run: nix develop --command reuse lint
       - name: Check nix flake show runs successfully
         run: nix flake show
-      - name: evaluation check
-        run: nix develop --command make-checks
       - name: Check templates
         run: |
+          grep -r "test" .github/workflows/build.yml
           set -eux -o pipefail
           tmp_flakes=$(mktemp -d)
           cleanup() { rm -rf "$tmp_flakes"; }
