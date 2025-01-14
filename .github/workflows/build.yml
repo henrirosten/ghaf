@@ -38,6 +38,7 @@ jobs:
           echo "github.repository: ${{ github.repository }}"
           echo "github.event.pull_request.head.repo.full_name: ${{ github.event.pull_request.head.repo.full_name }}"
           echo "github.actor: ${{ github.actor }}"
+          echo "test"
           echo "github.ref: ${{ github.ref}}"
           echo "github.event.pull_request.head.sha: ${{github.event.pull_request.head.sha}}"
           echo "authorized_user=$authorized_user"
