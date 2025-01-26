@@ -24,6 +24,8 @@ jobs:
         run: nix develop --command reuse lint
       - name: Check ghaf flake evaluates
         run: nix flake show --all-systems
+      - name: Run make-checks
+        run: nix develop --command make-checks
       - name: Check templates
         run: |
           set -eux -o pipefail
