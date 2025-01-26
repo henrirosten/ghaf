@@ -22,8 +22,10 @@ jobs:
         run: nix fmt -- --fail-on-change
       - name: Check reuse lint
         run: nix develop --command reuse lint
-      - name: Check ghaf flake evaluates
+      - name: Check nix flake show
         run: nix flake show --all-systems
+      - name: Check ghaf flake evaluates
+        run: nix flake check --no-build
       - name: Run make-checks
         run: nix develop --command make-checks
       - name: Check templates
