@@ -70,7 +70,7 @@ in
         withResolved = cfg.networkSupport;
         withSerial = config.ghaf.profiles.debug.enable;
         withDebug = config.ghaf.profiles.debug.enable;
-        withHardenedConfigs = true;
+        #withHardenedConfigs = true;
       };
       ghaf.givc.host.enable = true;
       services.logind.lidSwitch = "ignore";
