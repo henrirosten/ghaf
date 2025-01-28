@@ -18,23 +18,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Install nix
         uses: cachix/install-nix-action@v30
-      - name: Check .nix formatting
-        run: nix fmt -- --fail-on-change
-      - name: Check reuse lint
-        run: nix develop --command reuse lint
       - name: Check ghaf flake evaluates
         run: nix flake show --all-systems
-      - name: Check templates
-        run: |
-          set -eux -o pipefail
-          tmp_flakes=$(mktemp -d)
-          cleanup() { rm -rf "$tmp_flakes"; }
-          trap cleanup EXIT
-          nix eval --json --apply builtins.attrNames .#templates | jq -r '.[]' | while IFS=$'\t' read -r name; do
-            nix flake new -t ".#$name" "${tmp_flakes}/${name}";
-            if [[ "$name" == "ghaf-module" ]]; then
-                nix-instantiate --parse "${tmp_flakes}/${name}/default.nix"
-            else
-               nix flake show "${tmp_flakes}/${name}"
-            fi
-          done
+      - name: Check ghaf flake evaluates (nix flake check)
+        run: nix flake check --no-build
