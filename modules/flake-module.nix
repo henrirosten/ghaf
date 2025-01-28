@@ -27,15 +27,15 @@
     #TODO: Add the rest of the modules in their own directories with flake-module.nix
     desktop.imports = [ ./desktop ];
     host.imports = [ ./host ];
-    lanzaboote.imports = [ ./lanzaboote ];
-    imx8.imports = [ ./reference/hardware/imx8 ];
-    jetpack.imports = [ ./reference/hardware/jetpack ];
-    jetpack-microvm.imports = [ ./reference/hardware/jetpack-microvm ];
-    polarfire.imports = [ ./reference/hardware/polarfire ];
-    reference-appvms.imports = [ ./reference/appvms ];
-    reference-personalize.imports = [ ./reference/personalize ];
+    #lanzaboote.imports = [ ./lanzaboote ];
+    #imx8.imports = [ ./reference/hardware/imx8 ];
+    #jetpack.imports = [ ./reference/hardware/jetpack ];
+    #jetpack-microvm.imports = [ ./reference/hardware/jetpack-microvm ];
+    #polarfire.imports = [ ./reference/hardware/polarfire ];
+    #reference-appvms.imports = [ ./reference/appvms ];
+    #reference-personalize.imports = [ ./reference/personalize ];
     reference-profiles.imports = [ ./reference/profiles ];
     reference-programs.imports = [ ./reference/programs ];
-    reference-services.imports = [ ./reference/services ];
+    #reference-services.imports = [ ./reference/services ];
   };
 }
