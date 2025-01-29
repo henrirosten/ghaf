@@ -67,10 +67,10 @@ let
       package = hostConfiguration.config.system.build.isoImage;
     };
   targets = [
-    (installer "gen10" "debug")
+    #(installer "gen10" "debug")
     (installer "gen11" "debug")
-    (installer "gen10" "release")
-    (installer "gen11" "release")
+    #(installer "gen10" "release")
+    #(installer "gen11" "release")
   ];
 in
 {
