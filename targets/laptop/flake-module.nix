@@ -33,15 +33,15 @@ let
         };
       }
     ])
-    (laptop-configuration "lenovo-x1-extras" "debug" [
-      self.nixosModules.disko-ab-partitions-v1
-      {
-        ghaf = {
-          hardware.definition = import ../../modules/reference/hardware/lenovo-x1/definitions/x1-gen11.nix;
-          reference.profiles.mvp-user-trial-extras.enable = true;
-        };
-      }
-    ])
+    #(laptop-configuration "lenovo-x1-extras" "debug" [
+    #  self.nixosModules.disko-ab-partitions-v1
+    #  {
+    #    ghaf = {
+    #      hardware.definition = import ../../modules/reference/hardware/lenovo-x1/definitions/x1-gen11.nix;
+    #      reference.profiles.mvp-user-trial-extras.enable = true;
+    #    };
+    #  }
+    #])
     (laptop-configuration "dell-latitude-7230" "debug" [
       self.nixosModules.disko-ab-partitions-v1
       {
@@ -80,15 +80,15 @@ let
         };
       }
     ])
-    (laptop-configuration "lenovo-x1-extras" "release" [
-      self.nixosModules.disko-ab-partitions-v1
-      {
-        ghaf = {
-          hardware.definition = import ../../modules/reference/hardware/lenovo-x1/definitions/x1-gen11.nix;
-          reference.profiles.mvp-user-trial-extras.enable = true;
-        };
-      }
-    ])
+    #(laptop-configuration "lenovo-x1-extras" "release" [
+    #  self.nixosModules.disko-ab-partitions-v1
+    #  {
+    #    ghaf = {
+    #      hardware.definition = import ../../modules/reference/hardware/lenovo-x1/definitions/x1-gen11.nix;
+    #      reference.profiles.mvp-user-trial-extras.enable = true;
+    #    };
+    #  }
+    #])
     (laptop-configuration "dell-latitude-7230" "release" [
       self.nixosModules.disko-ab-partitions-v1
       {
