@@ -82,7 +82,7 @@ let
                 };
 
                 microvm.netvm = {
-                  enable = true;
+                  enable = false;
                   extraModules = netvmExtraModules;
                 };
               };
