@@ -13,7 +13,7 @@ let
   netvmBaseConfiguration = {
     imports = [
       inputs.impermanence.nixosModules.impermanence
-      inputs.self.nixosModules.givc-netvm
+      #inputs.self.nixosModules.givc-netvm
       (import ./common/vm-networking.nix {
         inherit
           config
@@ -64,7 +64,7 @@ let
               withDebug = config.ghaf.profiles.debug.enable;
               withHardenedConfigs = true;
             };
-            givc.netvm.enable = true;
+            #givc.netvm.enable = true;
 
             # Storage
             storagevm = {

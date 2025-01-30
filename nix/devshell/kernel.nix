@@ -23,7 +23,7 @@
           packages = [
             pkgs.ncurses
             pkgs.pkg-config
-            self'.packages.kernel-hardening-checker
+            #self'.packages.kernel-hardening-checker
           ] ++ extraPackages;
 
           inputsFrom = [ linux ];
