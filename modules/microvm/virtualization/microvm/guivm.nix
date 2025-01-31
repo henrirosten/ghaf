@@ -90,7 +90,7 @@ let
               withResolved = true;
               withTimesyncd = true;
               withDebug = config.ghaf.profiles.debug.enable;
-              #withHardenedConfigs = true;
+              withHardenedConfigs = true;
             };
             givc.guivm.enable = true;
 

@@ -50,7 +50,7 @@ let
               withPolkit = true;
               withTimesyncd = true;
               withDebug = configHost.ghaf.profiles.debug.enable;
-              #withHardenedConfigs = true;
+              withHardenedConfigs = true;
             };
             givc.adminvm.enable = true;
 

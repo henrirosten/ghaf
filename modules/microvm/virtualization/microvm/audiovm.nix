@@ -59,7 +59,7 @@ let
               withResolved = true;
               withTimesyncd = true;
               withDebug = configHost.ghaf.profiles.debug.enable;
-              #withHardenedConfigs = true;
+              withHardenedConfigs = true;
             };
             givc.audiovm.enable = true;
 

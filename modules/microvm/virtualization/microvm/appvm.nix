@@ -105,7 +105,7 @@ let
                   withTimesyncd = true;
                   withPolkit = true;
                   withDebug = configHost.ghaf.profiles.debug.enable;
-                  #withHardenedConfigs = true;
+                  withHardenedConfigs = true;
                 };
 
                 ghaf-audio = {
