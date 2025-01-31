@@ -59,7 +59,7 @@ let
               withResolved = true;
               withTimesyncd = true;
               withDebug = configHost.ghaf.profiles.debug.enable;
-              withHardenedConfigs = true;
+              #withHardenedConfigs = true;
             };
             givc.audiovm.enable = true;
 
@@ -148,6 +148,7 @@ in
   config = lib.mkIf cfg.enable {
     microvm.vms."${vmName}" = {
       autostart = true;
+      nixpkgs = inputs.nixpkgs;
       config = audiovmBaseConfiguration // {
         imports = audiovmBaseConfiguration.imports ++ cfg.extraModules;
       };

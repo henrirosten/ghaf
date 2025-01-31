@@ -90,7 +90,7 @@ let
               withResolved = true;
               withTimesyncd = true;
               withDebug = config.ghaf.profiles.debug.enable;
-              withHardenedConfigs = true;
+              #withHardenedConfigs = true;
             };
             givc.guivm.enable = true;
 
@@ -351,6 +351,7 @@ in
   config = lib.mkIf cfg.enable {
     microvm.vms."${vmName}" = {
       autostart = true;
+      nixpkgs = inputs.nixpkgs;
       config = guivmBaseConfiguration // {
         boot.kernelPackages =
           if config.ghaf.guest.kernel.hardening.graphics.enable then

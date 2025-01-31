@@ -50,7 +50,7 @@ let
               withPolkit = true;
               withTimesyncd = true;
               withDebug = configHost.ghaf.profiles.debug.enable;
-              withHardenedConfigs = true;
+              #withHardenedConfigs = true;
             };
             givc.adminvm.enable = true;
 
@@ -145,6 +145,7 @@ in
   config = lib.mkIf cfg.enable {
     microvm.vms."${vmName}" = {
       autostart = true;
+      nixpkgs = inputs.nixpkgs;
       config = adminvmBaseConfiguration // {
         imports = adminvmBaseConfiguration.imports ++ cfg.extraModules;
       };

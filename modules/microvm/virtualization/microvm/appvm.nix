@@ -105,7 +105,7 @@ let
                   withTimesyncd = true;
                   withPolkit = true;
                   withDebug = configHost.ghaf.profiles.debug.enable;
-                  withHardenedConfigs = true;
+                  #withHardenedConfigs = true;
                 };
 
                 ghaf-audio = {
@@ -228,6 +228,7 @@ let
     in
     {
       autostart = true;
+      nixpkgs = inputs.nixpkgs;
       config = appvmConfiguration // {
         imports = appvmConfiguration.imports ++ cfg.extraModules ++ vm.extraModules ++ appExtraModules;
       };

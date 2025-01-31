@@ -62,7 +62,7 @@ let
               withResolved = true;
               withTimesyncd = true;
               withDebug = config.ghaf.profiles.debug.enable;
-              withHardenedConfigs = true;
+              #withHardenedConfigs = true;
             };
             givc.netvm.enable = true;
 
@@ -152,6 +152,7 @@ in
     microvm.vms."${vmName}" = {
       autostart = true;
       restartIfChanged = false;
+      nixpkgs = inputs.nixpkgs;
       config = netvmBaseConfiguration // {
         imports = netvmBaseConfiguration.imports ++ cfg.extraModules;
       };
