@@ -145,6 +145,7 @@ in
   config = lib.mkIf cfg.enable {
     microvm.vms."${vmName}" = {
       autostart = true;
+      nixpkgs = inputs.nixpkgs;
       config = adminvmBaseConfiguration // {
         imports = adminvmBaseConfiguration.imports ++ cfg.extraModules;
       };

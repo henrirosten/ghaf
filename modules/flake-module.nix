@@ -3,7 +3,11 @@
 #
 # Modules to be exported from Flake
 #
-{ inputs, ... }:
+{ self, inputs, ... }:
+let
+  # make self and inputs available in nixos modules
+  specialArgs = {inherit self inputs;};
+in
 {
   imports = [
     ./disko/flake-module.nix
@@ -13,7 +17,7 @@
   ];
 
   flake.nixosModules = {
-    common.imports = [
+    common.imports = builtins.trace "HENRI modules/flake-module.nix: ${self.outPath}" [
       ./common
       {
         ghaf.development.nix-setup.nixpkgs = inputs.nixpkgs;

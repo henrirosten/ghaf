@@ -228,6 +228,7 @@ let
     in
     {
       autostart = true;
+      nixpkgs = inputs.nixpkgs;
       config = appvmConfiguration // {
         imports = appvmConfiguration.imports ++ cfg.extraModules ++ vm.extraModules ++ appExtraModules;
       };
