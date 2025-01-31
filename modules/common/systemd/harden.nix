@@ -1,6 +1,6 @@
 # Copyright 2022-2024 TII (SSRC) and the Ghaf contributors
 # SPDX-License-Identifier: Apache-2.0
-{ config, lib, ... }:
+{ self, config, lib, ... }:
 let
   # Ghaf systemd config
   cfg = config.ghaf.systemd;
@@ -18,7 +18,7 @@ let
   };
 in
 {
-  options.ghaf.systemd = {
+  options.ghaf.systemd = builtins.trace "HENRI modules/common/systemd/default.nix: ${self.outPath}" {
     withHardenedConfigs = lib.mkOption {
       description = "Enable common hardened configs.";
       type = lib.types.bool;
@@ -48,13 +48,13 @@ in
 
   config = {
     systemd = lib.mkMerge [
-      # Apply hardened systemd service configurations
-      (lib.mkIf cfg.withHardenedConfigs (apply-service-configs ./hardened-configs/common))
+      # # Apply hardened systemd service configurations
+      # (lib.mkIf cfg.withHardenedConfigs (apply-service-configs "${self.outPath}/modules/systemd/hardened-configs/common"))
 
-      # Apply release only service configurations
-      (lib.mkIf (
-        !cfg.withDebug && cfg.withHardenedConfigs
-      ) (apply-service-configs ./hardened-configs/release))
+      # # Apply release only service configurations
+      # (lib.mkIf (
+      #   !cfg.withDebug && cfg.withHardenedConfigs
+      # ) (apply-service-configs "${self.outPath}/modules/systemd/hardened-configs/release"))
 
       # Set systemd log level
       { services."_global_".environment.SYSTEMD_LOG_LEVEL = cfg.logLevel; }

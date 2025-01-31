@@ -13,6 +13,7 @@ let
       hostConfiguration = lib.nixosSystem {
         inherit system;
         modules = [
+          self.nixosModules.common
           (
             { pkgs, modulesPath, ... }:
             let

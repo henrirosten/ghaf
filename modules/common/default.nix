@@ -3,8 +3,9 @@
 #
 # Common ghaf modules
 #
+{ self, inputs, ... }:
 {
-  imports = [
+  imports = builtins.trace "HENRI modules/common/default.nix: ${self.outPath}" [
     ./boot/systemd-boot-dtb.nix
     ./common.nix
     ./development

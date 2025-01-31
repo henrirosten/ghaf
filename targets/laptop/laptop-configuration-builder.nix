@@ -17,6 +17,7 @@ let
       hostConfiguration = lib.nixosSystem {
         inherit system;
         modules = [
+          self.nixosModules.common
           self.nixosModules.reference-profiles
           self.nixosModules.laptop
           inputs.lanzaboote.nixosModules.lanzaboote
