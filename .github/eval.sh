@@ -123,10 +123,12 @@ evaluate () {
     sed -i "s/.name//" "$TMPDIR/outs.txt"
     # Read the attribute set names
     grep -oP ".*(?=\.)" "$TMPDIR/outs.txt" | sort | uniq >"$TMPDIR/attrs.txt"
+    flake_nar="$(nix flake prefetch '.' --json | jq -r '.hash')"
+    echo "[+] flake_nar: $flake_nar"
     # Generate eval expression on the fly
     printf '%s\n' \
       "let" \
-      "  flake = builtins.getFlake ("git+file://" + toString ./.);"\
+      "  flake = builtins.getFlake ("git+file://" + (toString ./.) + \"?narHash=${flake_nar}\");"\
       "  lib = (import flake.inputs.nixpkgs { }).lib;"\
       "in {" >"$TMPDIR/eval.nix"
     while read -r attrset; do
@@ -155,6 +157,7 @@ evaluate () {
     # converting possible eval errors to exit status:
     nix-eval-jobs \
       --accept-flake-config \
+      --option pure-eval true \
       --gc-roots-dir "$gcroot" \
       --force-recurse \
       --option allow-import-from-derivation false \
