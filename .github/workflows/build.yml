@@ -14,7 +14,6 @@ permissions:
   contents: read
 jobs:
   check-identity:
-    if: ${{ github.repository == 'tiiuae/ghaf' }} # Skip in forks
     runs-on: ubuntu-latest
     outputs:
       authorized_user: ${{ steps.check-authorized-user.outputs.authorized_user }}
