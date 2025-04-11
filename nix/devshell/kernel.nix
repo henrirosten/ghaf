@@ -57,13 +57,13 @@
         arch = "x86";
         inherit (pkgs) linux;
       };
-      devShells.kernel-jetson-orin = mkKernelShell {
-        platform = "jetson-orin";
-        linux = inputs.jetpack-nixos.legacyPackages.${system}.kernel;
-        extraPackages = [ pkgs.gawk ];
-        shellHook = ''
-          patchShebangs scripts/
-        '';
-      };
+      #devShells.kernel-jetson-orin = mkKernelShell {
+      #  platform = "jetson-orin";
+      #  linux = inputs.jetpack-nixos.legacyPackages.${system}.kernel;
+      #  extraPackages = [ pkgs.gawk ];
+      #  shellHook = ''
+      #    patchShebangs scripts/
+      #  '';
+      #};
     };
 }
