@@ -1,0 +1,52 @@
+# SPDX-FileCopyrightText: 2022-2025 TII (SSRC) and the Ghaf contributors
+#
+# SPDX-License-Identifier: Apache-2.0
+
+name: "Cachix pin"
+on:
+  push:
+    tags:
+      - "ghaf-.*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "The existing tag to pin"
+        type: "string"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Debug
+        run: |
+          echo "github.event_name: ${{ github.event_name }}"
+          echo "github.repository: ${{ github.repository }}"
+          echo "github.workflow: ${{ github.workflow}}"
+          echo "github.ref: ${{ github.ref }}"
+          echo "github.ref_name: ${{ github.ref_name }}"
+          echo "inputs.tag: ${{ inputs.tag }}"
+  cachix-pin:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - target: lenovo-x1-carbon-gen11-debug
+          #- target: lenovo-x1-carbon-gen11-release
+    concurrency:
+      # Cancel any in-progress workflow runs for the same tag
+      group: ${{ github.workflow }}.${{ matrix.target }}.${{ inputs.tag || github.ref_name }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+      - name: Install nix
+        uses: cachix/install-nix-action@fc6e360bedc9ee72d75e701397f0bb30dce77568 # v31
+      - name: Pin
+        run: |
+          echo "Hello"
