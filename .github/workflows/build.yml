@@ -21,7 +21,6 @@ jobs:
         uses: ./.github/workflows/authorize.yml
         # Skip running in forked repositories, since the workflow run would fail
         # due to missing repository secret(s):
-        if: ${{ github.repository == 'tiiuae/ghaf' }}
         with:
             github-org: tiiuae
         secrets:
