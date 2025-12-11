@@ -23,7 +23,7 @@
   inputs = {
     #TODO: carrying the extra patch(es) until merged to unstable
     nixpkgs.url = "github:tiiuae/nixpkgs/mid-dec-bump";
-    #nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
 
     # A framework for testing ghaf configurations
     ci-test-automation = {
