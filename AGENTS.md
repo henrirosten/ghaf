@@ -3,6 +3,7 @@ SPDX-FileCopyrightText: 2022-2026 TII (SSRC) and the Ghaf contributors
 SPDX-License-Identifier: Apache-2.0
 -->
 
+
 # Ghaf — instructions for coding agents
 
 Ghaf is a Nix/NixOS security framework that compartmentalises a device into a host plus a
